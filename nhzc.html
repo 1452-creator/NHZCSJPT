@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>能回智测平台 - 新能源汽车电驱测试系统 | 监控后台数据</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tech: {
+                            dark: '#050A1F',
+                            darker: '#030818',
+                            primary: '#165DFF',
+                            light: '#4D88FF',
+                            neon: '#00E5FF',
+                            neonGreen: '#00FFAA',
+                            neonYellow: '#FFE500',
+                            neonRed: '#FF3A3A',
+                            gray: '#121A2F',
+                            lightGray: '#94A3B8',
+                            midGray: '#2D3748'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    keyframes: {
+                        floatUp: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-8px)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { 'box-shadow': '0 0 15px rgba(22,93,255,0.4)' },
+                            '50%': { 'box-shadow': '0 0 25px rgba(0,229,255,0.6)' }
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateX(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' }
+                        },
+                        numberJump: {
+                            '0%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.08)' },
+                            '100%': { transform: 'scale(1)' }
+                        },
+                        rotateSlow: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' }
+                        },
+                        blink: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.5' }
+                        },
+                        gradientMove: {
+                            '0%': { 'background-position': '0% 50%' },
+                            '50%': { 'background-position': '100% 50%' },
+                            '100%': { 'background-position': '0% 50%' }
+                        }
+                    },
+                    animation: {
+                        floatUp: 'floatUp 4s ease-in-out infinite',
+                        pulseGlow: 'pulseGlow 3s ease-in-out infinite',
+                        slideIn: 'slideIn 0.6s ease-out',
+                        numberJump: 'numberJump 1.2s ease-in-out infinite',
+                        rotateSlow: 'rotateSlow 12s linear infinite',
+                        blink: 'blink 1.5s ease-in-out infinite',
+                        gradientMove: 'gradientMove 8s ease infinite'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+            .animate-float { animation: float 6s ease-in-out infinite; }
+            .animate-line { animation: lineMove 4s linear infinite; }
+            .animate-data-flow { animation: dataFlow 2s linear infinite; }
+            .animate-gradient { animation: gradientShift 8s ease infinite; }
+            .animate-number { animation: numberPulse 1.5s ease-in-out infinite; }
+            .bg-grid { background-image: radial-gradient(rgba(22,93,255,0.1) 1px, transparent 1px); background-size: 30px 30px; }
+            .bg-grid-fine { background-image: radial-gradient(rgba(0,229,255,0.05) 1px, transparent 1px); background-size: 15px 15px; }
+            .glow { box-shadow: 0 0 20px rgba(22,93,255,0.3); }
+            .glow-neon { box-shadow: 0 0 15px rgba(0,229,255,0.5); }
+            .glow-warning { box-shadow: 0 0 15px rgba(255,229,0,0.5); }
+            .glow-danger { box-shadow: 0 0 15px rgba(255,58,58,0.5); }
+            .text-shadow { text-shadow: 0 0 10px rgba(0,229,255,0.8); }
+            .text-shadow-sm { text-shadow: 0 0 5px rgba(0,229,255,0.5); }
+            .backdrop-blur-xs { backdrop-filter: blur(2px); }
+            .content-auto { content-visibility: auto; }
+            .card-hover { transition: all 0.3s ease; }
+            .card-hover:hover { transform: translateY(-4px); box-shadow: 0 0 25px rgba(0,229,255,0.4); }
+            .btn-hover { transition: all 0.2s ease; }
+            .btn-hover:hover { transform: scale(1.05); }
+        }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes lineMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 200px 200px; }
+        }
+
+        @keyframes dataFlow {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 0; }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes numberPulse {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+
+        .data-line {
+            background: linear-gradient(90deg, transparent, #165DFF, transparent);
+            background-size: 100px 100%;
+            height: 2px;
+        }
+        
+        .data-line-neon {
+            background: linear-gradient(90deg, transparent, #00E5FF, transparent);
+            background-size: 100px 100%;
+            height: 2px;
+            animation: dataFlow 1.5s linear infinite;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #060F24, #121A2F, #060F24);
+            background-size: 200% 200%;
+        }
+        
+        .number-display {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.5px;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(0,229,255,0.3);
+            border-radius: 50%;
+            animation: particleFloat 8s infinite linear;
+        }
+        
+        @keyframes particleFloat {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-tech-darker text-white m-0 p-0 min-h-screen overflow-hidden bg-grid-fine relative">
+    <!-- 动态粒子背景 -->
+    <div id="particles" class="fixed inset-0 z-0 pointer-events-none"></div>
+    
+    <!-- 动态渐变背景 -->
+    <div class="fixed inset-0 z-0 opacity-30 pointer-events-none gradient-bg animate-gradient"></div>
+    
+    <!-- 动态背景线条 - 多层级 -->
+    <div class="fixed inset-0 z-0 opacity-20 pointer-events-none"
+         style="background: linear-gradient(90deg, rgba(22,93,255,0.05) 1px, transparent 1px),
+                linear-gradient(rgba(22,93,255,0.05) 1px, transparent 1px); background-size: 100px 100px; animation: lineMove 10s linear infinite;"></div>
+    <div class="fixed inset-0 z-0 opacity-10 pointer-events-none"
+         style="background: linear-gradient(45deg, rgba(0,229,255,0.03) 1px, transparent 1px),
+                linear-gradient(135deg, rgba(0,229,255,0.03) 1px, transparent 1px); background-size: 50px 50px; animation: lineMove 15s linear reverse infinite;"></div>
+
+    <!-- 全屏容器 -->
+    <div class="fixed inset-0 z-10 flex flex-col">
+        <!-- 顶部导航栏 - 高级版 -->
+        <div class="flex items-center justify-between py-3 px-4 bg-tech-dark/80 backdrop-blur-xs border-b border-tech-primary/30 flex-shrink-0 animate-slideIn">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-tech-primary/20 flex items-center justify-center border border-tech-neon glow-neon animate-pulseGlow">
+                    <i class="fa fa-bolt text-tech-neon text-xl animate-rotateSlow"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-wide m-0 text-shadow">
+                        <span class="text-tech-neon">能回智测</span>
+                        <span class="text-white">数据监控平台</span>
+                    </h1>
+                    <p class="text-tech-lightGray text-xs mt-1">新能源汽车电驱系统 | 能量回馈型测试平台 | 全维度实时监控</p>
+                </div>
+            </div>
+            
+            <!-- 顶部状态信息 -->
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <i class="fa fa-clock-o text-tech-lightGray animate-blink"></i>
+                    <span class="text-xs text-tech-lightGray font-mono" id="currentTime">2024-01-01 00:00:00</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-tech-green/10 border border-tech-neonGreen/30 animate-pulse-slow">
+                    <div class="w-2 h-2 bg-tech-neonGreen rounded-full animate-pulse"></div>
+                    <span class="text-xs text-tech-neonGreen">系统运行中</span>
+                </div>
+                <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-tech-gray">
+                    <i class="fa fa-server text-tech-lightGray animate-blink"></i>
+                    <span class="text-xs text-tech-lightGray">服务器负载: 18%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主区域：分区块布局 -->
+        <div class="flex-1 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-3 p-3 w-full h-full box-border relative overflow-auto">
+            <!-- 左侧告警面板 (2列) -->
+            <div class="lg:col-span-2 flex flex-col gap-3">
+                <!-- 实时告警模块 -->
+                <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow h-full flex flex-col card-hover animate-pulseGlow">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-tech-neon">实时告警</h2>
+                        <div class="px-2 py-1 rounded-full bg-tech-neonRed/10 border border-tech-neonRed/30 text-xs text-tech-neonRed animate-blink">
+                            <i class="fa fa-exclamation-triangle mr-1"></i>0 条紧急告警
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto space-y-2">
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-neonYellow/30 glow-warning animate-slideIn card-hover" style="animation-delay: 0.1s">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-tech-neonYellow animate-blink">【预警】</span>
+                                <span>2026-04-20 14:25:30</span>
+                            </div>
+                            <p class="text-xs mt-1 text-tech-lightGray">电机温度接近阈值 (26°C/45°C)</p>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 animate-slideIn card-hover" style="animation-delay: 0.2s">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-tech-lightGray">【信息】</span>
+                                <span>2026-04-20 14:20:15</span>
+                            </div>
+                            <p class="text-xs mt-1 text-tech-lightGray">能量回馈效率达到92.5%</p>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 animate-slideIn card-hover" style="animation-delay: 0.3s">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-tech-lightGray">【信息】</span>
+                                <span>2026-04-20 14:15:00</span>
+                            </div>
+                            <p class="text-xs mt-1 text-tech-lightGray">数据同步至云端完成</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 flex justify-between text-xs">
+                        <button class="px-2 py-1 rounded bg-tech-primary/20 hover:bg-tech-primary/30 transition-colors btn-hover">
+                            <i class="fa fa-refresh mr-1"></i>刷新
+                        </button>
+                        <button class="px-2 py-1 rounded bg-tech-midGray hover:bg-tech-gray transition-colors btn-hover">
+                            <i class="fa fa-history mr-1"></i>历史
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 系统状态概览 -->
+                <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow h-full card-hover animate-pulseGlow">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-tech-neon">系统状态</h2>
+                        <i class="fa fa-tachometer text-tech-primary animate-float"></i>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                            <p class="text-xs text-tech-lightGray">CPU使用率</p>
+                            <p class="text-lg font-bold text-tech-neon number-display animate-numberJump">18%</p>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                            <p class="text-xs text-tech-lightGray">内存占用</p>
+                            <p class="text-lg font-bold text-tech-neon number-display animate-numberJump">42%</p>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                            <p class="text-xs text-tech-lightGray">磁盘IO</p>
+                            <p class="text-lg font-bold text-tech-neon number-display animate-numberJump">28MB/s</p>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                            <p class="text-xs text-tech-lightGray">网络延迟</p>
+                            <p class="text-lg font-bold text-tech-neon number-display animate-numberJump">8ms</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 h-16">
+                        <canvas id="systemStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 中间核心监控区 (8列) -->
+            <div class="lg:col-span-8 flex flex-col gap-3">
+                <!-- 虚拟设备拓扑图 - 更大更精细 -->
+                <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow h-[300px] relative overflow-hidden card-hover animate-pulseGlow">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-tech-neon">设备拓扑监控</h2>
+                        <div class="flex items-center gap-2">
+                            <button class="px-2 py-1 rounded bg-tech-primary/20 hover:bg-tech-primary/30 text-xs transition-colors btn-hover">
+                                <i class="fa fa-expand mr-1"></i>全屏
+                            </button>
+                            <button class="px-2 py-1 rounded bg-tech-midGray hover:bg-tech-gray text-xs transition-colors btn-hover">
+                                <i class="fa fa-cog mr-1"></i>设置
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute inset-4 z-0 flex items-center justify-center opacity-40">
+                        <div class="relative w-full h-full">
+                            <!-- 电机虚拟图 - 增强版 -->
+                            <div class="absolute left-[15%] top-[25%] w-24 h-24 bg-tech-primary/20 rounded-full flex items-center justify-center border-2 border-tech-neon glow-neon animate-float">
+                                <i class="fa fa-cogs text-tech-neon text-4xl animate-rotateSlow"></i>
+                                <div class="absolute -bottom-8 text-sm text-tech-neon whitespace-nowrap font-medium">驱动电机</div>
+                                <div class="absolute -top-8 text-xs bg-tech-darker/80 px-2 py-1 rounded">
+                                    <span class="text-tech-neon animate-blink">3200r/min</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 逆变器虚拟图 - 增强版 -->
+                            <div class="absolute left-[40%] top-[10%] w-24 h-24 bg-tech-primary/20 rounded-lg flex items-center justify-center border-2 border-tech-neon glow-neon animate-float">
+                                <i class="fa fa-bolt text-tech-neon text-4xl animate-pulse-slow"></i>
+                                <div class="absolute -bottom-8 text-sm text-tech-neon whitespace-nowrap font-medium">逆变器</div>
+                                <div class="absolute -top-8 text-xs bg-tech-darker/80 px-2 py-1 rounded">
+                                    <span class="text-tech-neon animate-blink">320.6 V AC</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 负载设备虚拟图 - 增强版 -->
+                            <div class="absolute left-[65%] top-[25%] w-24 h-24 bg-tech-primary/20 rounded-full flex items-center justify-center border-2 border-tech-neon glow-neon animate-float">
+                                <i class="fa fa-database text-tech-neon text-4xl"></i>
+                                <div class="absolute -bottom-8 text-sm text-tech-neon whitespace-nowrap font-medium">负载设备</div>
+                                <div class="absolute -top-8 text-xs bg-tech-darker/80 px-2 py-1 rounded">
+                                    <span class="text-tech-neon animate-blink">56 A</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 能量回馈单元 - 增强版 -->
+                            <div class="absolute left-[40%] top-[50%] w-24 h-24 bg-tech-neon/20 rounded-lg flex items-center justify-center border-2 border-tech-neon glow-neon animate-float">
+                                <i class="fa fa-refresh text-tech-neon text-4xl fa-spin" style="animation-duration: 5s;"></i>
+                                <div class="absolute -bottom-8 text-sm text-tech-neon whitespace-nowrap font-medium">能量回馈</div>
+                                <div class="absolute -top-8 text-xs bg-tech-darker/80 px-2 py-1 rounded">
+                                    <span class="text-tech-neon animate-blink">91.83 %</span>
+                                </div>
+                            </div>
+
+                            <!-- 电池管理系统 -->
+                            <div class="absolute left-[15%] top-[55%] w-24 h-24 bg-tech-primary/20 rounded-lg flex items-center justify-center border-2 border-tech-neon glow-neon animate-float">
+                                <i class="fa fa-battery-full text-tech-neon text-4xl animate-pulse-slow"></i>
+                                <div class="absolute -bottom-8 text-sm text-tech-neon whitespace-nowrap font-medium">电池管理</div>
+                                <div class="absolute -top-8 text-xs bg-tech-darker/80 px-2 py-1 rounded">
+                                    <span class="text-tech-neon animate-blink">88% SOC</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 冷却系统 -->
+                            <div class="absolute left-[65%] top-[55%] w-24 h-24 bg-tech-primary/20 rounded-lg flex items-center justify-center border-2 border-tech-neon glow-neon animate-float">
+                                <i class="fa fa-tint text-tech-neon text-4xl"></i>
+                                <div class="absolute -bottom-8 text-sm text-tech-neon whitespace-nowrap font-medium">冷却系统</div>
+                                <div class="absolute -top-8 text-xs bg-tech-darker/80 px-2 py-1 rounded">
+                                    <span class="text-tech-neon animate-blink">28°C</span>
+                                </div>
+                            </div>
+
+                            <!-- 增强版数据流箭头 -->
+                            <div class="absolute left-[27%] top-[35%] w-[13%] data-line-neon"></div>
+                            <div class="absolute left-[54%] top-[35%] w-[13%] data-line-neon"></div>
+                            <div class="absolute left-[48%] top-[25%] h-[15%] data-line-neon rotate-90"></div>
+                            <div class="absolute left-[48%] top-[45%] h-[15%] data-line-neon rotate-90"></div>
+                            <div class="absolute left-[27%] top-[55%] w-[13%] data-line-neon rotate-45"></div>
+                            <div class="absolute left-[54%] top-[55%] w-[13%] data-line-neon -rotate-45"></div>
+                            
+                            <!-- 详细数据标签 -->
+                            <div class="absolute left-[20%] top-[20%] text-sm text-tech-neon bg-tech-darker/80 px-2 py-1 rounded animate-blink">380V</div>
+                            <div class="absolute left-[60%] top-[20%] text-sm text-tech-neon bg-tech-darker/80 px-2 py-1 rounded animate-blink">125A</div>
+                            <div class="absolute left-[40%] top-[40%] text-sm text-tech-neon bg-tech-darker/80 px-2 py-1 rounded animate-blink">92.5%</div>
+                            <div class="absolute left-[20%] top-[50%] text-sm text-tech-neon bg-tech-darker/80 px-2 py-1 rounded animate-blink">42°C</div>
+                            <div class="absolute left-[60%] top-[50%] text-sm text-tech-neon bg-tech-darker/80 px-2 py-1 rounded animate-blink">120N·m</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 核心性能指标面板 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
+                    <!-- 电气性能指标 -->
+                    <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow card-hover animate-pulseGlow">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-lg font-bold text-tech-neon">电气性能指标</h2>
+                            <i class="fa fa-area-chart text-tech-primary animate-float"></i>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.1s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">线电压 (U)</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">320.2 V</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-primary to-tech-neon w-[85%] animate-pulse-slow"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-tech-lightGray mt-1">
+                                    <span>最小值: 300.3 V</span>
+                                    <span>最大值: 360.0V</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.2s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">线电流 (I)</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">43.6 A</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-primary to-tech-neon w-[75%] animate-pulse-slow"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-tech-lightGray mt-1">
+                                    <span>最小值: 35 A</span>
+                                    <span>最大值: 70 A</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.3s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">总谐波失真 (THD)</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">2.3 %</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-neonGreen to-tech-neon w-[30%] animate-pulse-slow"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-tech-lightGray mt-1">
+                                    <span>阈值: 5.0 %</span>
+                                    <span class="text-tech-neonGreen">正常</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.4s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">功率因数 (PF)</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">0.95</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-neonGreen to-tech-neon w-[98%] animate-pulse-slow"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-tech-lightGray mt-1">
+                                    <span>理想值: 0.97</span>
+                                    <span class="text-tech-neonGreen">优秀</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 h-24">
+                            <canvas id="electricalChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- 机械性能指标 -->
+                    <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow card-hover animate-pulseGlow">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-lg font-bold text-tech-neon">机械性能指标</h2>
+                            <i class="fa fa-cogs text-tech-primary animate-float"></i>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.1s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">电机转速</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">3602 r/min</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-primary to-tech-neon w-[72%] animate-pulse-slow"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-tech-lightGray mt-1">
+                                    <span>额定: 5000 r/min</span>
+                                    <span>当前负载: 72%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.2s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">输出转矩</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">119.8 N·m</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-primary to-tech-neon w-[80%] animate-pulse-slow"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-tech-lightGray mt-1">
+                                    <span>额定: 150 N·m</span>
+                                    <span>当前负载: 80%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.3s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">电机温度</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">38.7 °C</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-primary to-tech-neonYellow w-[84%] animate-pulse-slow"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-tech-lightGray mt-1">
+                                    <span>告警阈值: 45 °C</span>
+                                    <span class="text-tech-neonYellow">预警</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.4s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">振动幅值</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">0.8 mm/s</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-neonGreen to-tech-neon w-[27%] animate-pulse-slow"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-tech-lightGray mt-1">
+                                    <span>阈值: 3.0 mm/s</span>
+                                    <span class="text-tech-neonGreen">正常</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 h-24">
+                            <canvas id="mechanicalChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI诊断与能量回馈面板 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 h-full">
+                    <!-- AI智能诊断 -->
+                    <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow card-hover animate-pulseGlow">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-lg font-bold text-tech-neon">AI智能诊断</h2>
+                            <i class="fa fa-brain text-tech-primary animate-float"></i>
+                        </div>
+                        
+                        <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 text-center mb-3 animate-blink">
+                            <div class="inline-block w-3 h-3 bg-tech-neonGreen rounded-full animate-pulse-slow mr-2"></div>
+                            <span class="text-tech-neonGreen font-bold text-base">系统运行正常</span>
+                            <p class="text-xs text-tech-lightGray mt-1">AI诊断完成 | 无异常检测到</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                                <p class="text-xs text-tech-lightGray">健康度评分</p>
+                                <p class="text-xl font-bold text-tech-neon number-display animate-numberJump">94<span class="text-sm">/100</span></p>
+                            </div>
+                            <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                                <p class="text-xs text-tech-lightGray">剩余寿命</p>
+                                <p class="text-xl font-bold text-tech-neon number-display animate-numberJump">89<span class="text-sm">%</span></p>
+                            </div>
+                            <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                                <p class="text-xs text-tech-lightGray">故障概率</p>
+                                <p class="text-xl font-bold text-tech-neonGreen number-display animate-numberJump">0.89<span class="text-sm">%</span></p>
+                            </div>
+                            <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                                <p class="text-xs text-tech-lightGray">维护建议</p>
+                                <p class="text-xl font-bold text-tech-neonYellow number-display animate-numberJump">35<span class="text-sm">天</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="h-32">
+                            <canvas id="diagnosticChart"></canvas>
+                        </div>
+                        
+                        <div class="mt-2 relative h-10 bg-tech-darker rounded-lg overflow-hidden border border-tech-primary/20">
+                            <div class="absolute inset-0 flex items-center justify-center text-sm text-tech-lightGray">
+                                <i class="fa fa-refresh fa-spin mr-2"></i>AI深度扫描中
+                            </div>
+                            <div class="absolute top-0 left-0 w-[78%] h-1 bg-gradient-to-r from-tech-primary to-tech-neon animate-pulse-slow"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 能量回馈分析 -->
+                    <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow card-hover animate-pulseGlow">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-lg font-bold text-tech-neon">能量回馈分析</h2>
+                            <i class="fa fa-bolt text-tech-primary animate-pulse-slow"></i>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.1s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">回馈效率</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">91.8 %</span>
+                                </div>
+                                <div class="h-1.5 bg-tech-darker rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-tech-neonGreen to-tech-neon w-[92.5%] animate-pulse-slow"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.2s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">实时节能功率</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">23.6 kW</span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-slideIn" style="animation-delay: 0.3s">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm">今日回收电能</span>
+                                    <span class="text-tech-neon font-bold text-lg number-display animate-numberJump">62 kWh</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-floatUp">
+                                    <span class="text-xs text-tech-lightGray">本月回收</span>
+                                    <p class="text-tech-neon font-bold">643kWh</p>
+                                </div>
+                                <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover animate-floatUp">
+                                    <span class="text-xs text-tech-lightGray">等效减排</span>
+                                    <p class="text-tech-neon font-bold">3.8 吨 CO₂</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 h-32">
+                            <canvas id="energyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧数据统计区 (2列) -->
+            <div class="lg:col-span-2 flex flex-col gap-3">
+                <!-- 测试统计报表 -->
+                <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow h-full card-hover animate-pulseGlow">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-tech-neon">测试统计</h2>
+                        <i class="fa fa-bar-chart text-tech-primary animate-float"></i>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                            <span class="text-xs text-tech-lightGray">今日测试</span>
+                            <p class="text-xl font-bold text-tech-neon number-display animate-numberJump">1</p>
+                            <span class="text-xs text-tech-neonGreen">↑0%</span>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                            <span class="text-xs text-tech-lightGray">本周测试</span>
+                            <p class="text-xl font-bold text-tech-neon number-display animate-numberJump">12</p>
+                            <span class="text-xs text-tech-neonGreen">↑0%</span>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                            <span class="text-xs text-tech-lightGray">本月测试</span>
+                            <p class="text-xl font-bold text-tech-neon number-display animate-numberJump">32</p>
+                            <span class="text-xs text-tech-neonGreen">↑12%</span>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 text-center card-hover animate-floatUp">
+                            <span class="text-xs text-tech-lightGray">累计测试</span>
+                            <p class="text-xl font-bold text-tech-neon number-display animate-numberJump">128</p>
+                            <span class="text-xs text-tech-lightGray">+</span>
+                        </div>
+                    </div>
+                    
+                    <div class="h-32 mb-3">
+                        <canvas id="testReportChart"></canvas>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center p-2 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover">
+                            <span class="text-xs">合格率</span>
+                            <div class="flex items-center">
+                                <span class="text-tech-neonGreen font-bold text-sm">98.2%</span>
+                                <div class="w-16 h-1 bg-tech-darker rounded-full ml-2 overflow-hidden">
+                                    <div class="h-full bg-tech-neonGreen w-[98.2%] animate-pulse-slow"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover">
+                            <span class="text-xs">故障预警率</span>
+                            <div class="flex items-center">
+                                <span class="text-tech-neonYellow font-bold text-sm">1.8%</span>
+                                <div class="w-16 h-1 bg-tech-darker rounded-full ml-2 overflow-hidden">
+                                    <div class="h-full bg-tech-neonYellow w-[1.8%] animate-pulse-slow"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-tech-darker rounded-lg border border-tech-primary/20 card-hover">
+                            <span class="text-xs">平均测试时长</span>
+                            <span class="text-tech-neon font-bold text-sm">8.5 分钟/台</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 云端数据管理 -->
+                <div class="bg-tech-gray/90 rounded-xl p-4 border border-tech-primary/30 glow h-full card-hover animate-pulseGlow">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-bold text-tech-neon">云端数据管理</h2>
+                        <i class="fa fa-cloud text-tech-primary animate-rotateSlow"></i>
+                    </div>
+                    
+                    <div class="p-3 bg-tech-darker rounded-lg border border-tech-primary/20 text-center mb-3 animate-blink">
+                        <i class="fa fa-cloud-upload text-tech-neon text-xl animate-pulse-slow"></i>
+                        <p class="text-sm text-tech-lightGray mt-1">数据实时上云</p>
+                        <p class="text-tech-neonGreen text-xs mt-1">同步状态: 已完成</p>
+                    </div>
+                    
+                    <div class="h-28 mb-3">
+                        <canvas id="cloudDataChart"></canvas>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 flex items-center gap-2 card-hover animate-slideIn" style="animation-delay: 0.1s">
+                            <div class="w-8 h-8 rounded-full bg-tech-primary/20 flex items-center justify-center animate-pulse-slow">
+                                <i class="fa fa-database text-tech-primary"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-tech-lightGray">数据存储量</p>
+                                <p class="text-sm text-tech-neon font-bold">128GB</p>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 flex items-center gap-2 card-hover animate-slideIn" style="animation-delay: 0.2s">
+                            <div class="w-8 h-8 rounded-full bg-tech-primary/20 flex items-center justify-center animate-pulse-slow">
+                                <i class="fa fa-globe text-tech-primary"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-tech-lightGray">在线终端数</p>
+                                <p class="text-sm text-tech-neon font-bold">4个</p>
+                            </div>
+                        </div>
+                        <div class="p-2 bg-tech-darker rounded-lg border border-tech-primary/20 flex items-center gap-2 card-hover animate-slideIn" style="animation-delay: 0.3s">
+                            <div class="w-8 h-8 rounded-full bg-tech-primary/20 flex items-center justify-center animate-pulse-slow">
+                                <i class="fa fa-shield text-tech-primary"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-tech-lightGray">数据安全等级</p>
+                                <p class="text-sm text-tech-neon font-bold">B级</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部状态栏 -->
+        <div class="bg-tech-dark/80 backdrop-blur-xs border-t border-tech-primary/30 py-2 px-4 flex justify-between items-center flex-shrink-0 animate-slideIn">
+            <div class="text-tech-lightGray text-xs">
+                能回智测高端监控平台 © 2026 新能源汽车电驱系统能量回馈型测试平台 | 版本: v2.1.0
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-xs text-tech-lightGray flex items-center gap-1">
+                    <i class="fa fa-clock-o animate-blink"></i>
+                    <span>运行时长: 1286小时</span>
+                </div>
+                <div class="text-xs text-tech-lightGray flex items-center gap-1">
+                    <i class="fa fa-refresh animate-blink"></i>
+                    <span>数据刷新: 10min</span>
+                </div>
+                <button class="px-3 py-1 rounded bg-tech-primary/20 hover:bg-tech-primary/30 text-xs transition-colors btn-hover">
+                    <i class="fa fa-download mr-1"></i>导出报告
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建动态粒子
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for(let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                container.appendChild(particle);
+            }
+        }
+        
+        // 更新当前时间
+        function updateTime() {
+            document.getElementById('currentTime').textContent = moment().format('YYYY-MM-DD HH:mm:ss');
+        }
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            createParticles();
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+        // 1. 系统状态图表
+        const systemStatusChart = new Chart(document.getElementById('systemStatusChart'), {
+            type: 'line',
+            data: {
+                labels: ['', '', '', '', '', ''],
+                datasets: [{
+                    label: 'CPU',
+                    data: [15, 18, 16, 19, 18, 17],
+                    borderColor: '#165DFF',
+                    backgroundColor: 'rgba(22,93,255,0.1)',
+                    borderWidth: 2, tension: 0.4, fill: true, pointRadius: 0
+                }, {
+                    label: '内存',
+                    data: [40, 42, 41, 43, 42, 41],
+                    borderColor: '#00E5FF',
+                    backgroundColor: 'rgba(0,229,255,0.1)',
+                    borderWidth: 2, tension: 0.4, fill: true, pointRadius: 0
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { x: { display: false }, y: { display: false } } 
+            }
+        });
+
+        // 2. 电气性能图表
+        const electricalChart = new Chart(document.getElementById('electricalChart'), {
+            type: 'line',
+            data: {
+                labels: ['0s', '10s', '20s', '30s', '40s', '50s'],
+                datasets: [{
+                    label: '电压 (V)',
+                    data: [378, 380, 379, 381, 380, 379],
+                    borderColor: '#00E5FF',
+                    backgroundColor: 'rgba(0,229,255,0.1)',
+                    borderWidth: 2, tension: 0.4, fill: false, pointRadius: 2
+                }, {
+                    label: '电流 (A)',
+                    data: [123, 125, 124, 126, 125, 124],
+                    borderColor: '#165DFF',
+                    backgroundColor: 'rgba(22,93,255,0.1)',
+                    borderWidth: 2, tension: 0.4, fill: false, pointRadius: 2
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { display: false }, 
+                    y: { display: false, min: 100, max: 400 } 
+                } 
+            }
+        });
+
+        // 3. 机械性能图表
+        const mechanicalChart = new Chart(document.getElementById('mechanicalChart'), {
+            type: 'line',
+            data: {
+                labels: ['0s', '10s', '20s', '30s', '40s', '50s'],
+                datasets: [{
+                    label: '转速 (r/min)',
+                    data: [3580, 3600, 3595, 3610, 3605, 3600],
+                    borderColor: '#00E5FF',
+                    backgroundColor: 'rgba(0,229,255,0.1)',
+                    borderWidth: 2, tension: 0.4, fill: false, pointRadius: 2
+                }, {
+                    label: '温度 (°C)',
+                    data: [40, 41, 41.5, 42, 42, 41.8],
+                    borderColor: '#FFE500',
+                    backgroundColor: 'rgba(255,229,0,0.1)',
+                    borderWidth: 2, tension: 0.4, fill: false, pointRadius: 2
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { x: { display: false }, y: { display: false } } 
+            }
+        });
+
+        // 4. AI诊断图表
+        const diagnosticChart = new Chart(document.getElementById('diagnosticChart'), {
+            type: 'radar',
+            data: {
+                labels: ['电气性能', '机械状态', '热管理', '能效', '可靠性', '安全性'],
+                datasets: [{
+                    label: '当前状态',
+                    data: [95, 90, 85, 94, 92, 96],
+                    backgroundColor: 'rgba(0,229,255,0.2)',
+                    borderColor: '#00E5FF',
+                    pointBackgroundColor: '#00E5FF',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#00E5FF'
+                }, {
+                    label: '理想状态',
+                    data: [100, 100, 100, 100, 100, 100],
+                    backgroundColor: 'rgba(22,93,255,0.1)',
+                    borderColor: '#165DFF',
+                    pointBackgroundColor: '#165DFF',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#165DFF',
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(255,255,255,0.1)' },
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        pointLabels: { color: '#94A3B8', font: { size: 8 } },
+                        ticks: {
+                            display: false,
+                            backdropColor: 'transparent',
+                            stepSize: 20
+                        }
+                    }
+                }
+            }
+        });
+
+        // 5. 能量回馈图表
+        const energyChart = new Chart(document.getElementById('energyChart'), {
+            type: 'bar',
+            data: {
+                labels: ['周一', '周二', '周三', '周四', '周五'],
+                datasets: [{
+                    label: '回收电能 (kWh)',
+                    data: [58, 76, 43, 63, 55],
+                    backgroundColor: 'rgba(0,229,255,0.6)',
+                    borderColor: '#00E5FF',
+                    borderWidth: 1,
+                    borderRadius: 3
+                }, {
+                    label: '节能功率 (kW)',
+                    data: [42, 43, 45, 46, 46.5],
+                    backgroundColor: 'rgba(22,93,255,0.6)',
+                    borderColor: '#165DFF',
+                    borderWidth: 1,
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                barPercentage: 0.6
+            }
+        });
+
+        // 6. 测试报表图表
+        const testReportChart = new Chart(document.getElementById('testReportChart'), {
+            type: 'line',
+            data: {
+                labels: ['1周', '2周', '3周', '4周', '5周'],
+                datasets: [{
+                    label: '测试数量',
+                    data: [28, 30, 31, 32, 32],
+                    borderColor: '#00E5FF',
+                    backgroundColor: 'rgba(0,229,255,0.2)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#00E5FF',
+                    pointRadius: 3
+                }, {
+                    label: '合格数量',
+                    data: [26, 27, 28, 28, 30],
+                    borderColor: '#00FFAA',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: false,
+                    pointBackgroundColor: '#00FFAA',
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false } }
+            }
+        });
+
+        // 7. 云端数据图表
+        const cloudDataChart = new Chart(document.getElementById('cloudDataChart'), {
+            type: 'area',
+            data: {
+                labels: ['1时', '2时', '3时', '4时', '5时'],
+                datasets: [{
+                    label: '数据上传量 (MB)',
+                    data: [520, 780, 640, 980, 1250],
+                    borderColor: '#165DFF',
+                    backgroundColor: 'rgba(22,93,255,0.2)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false } }
+            }
+        });
+
+        // 实时数据更新
+        setInterval(() => {
+            // 更新电气性能数据
+            electricalChart.data.datasets[0].data = electricalChart.data.datasets[0].data.map(x => x + (Math.random() - 0.5) * 2);
+            electricalChart.data.datasets[1].data = electricalChart.data.datasets[1].data.map(x => x + (Math.random() - 0.5) * 1);
+            electricalChart.update();
+            
+            // 更新机械性能数据
+            mechanicalChart.data.datasets[0].data = mechanicalChart.data.datasets[0].data.map(x => x + (Math.random() - 0.5) * 5);
+            mechanicalChart.data.datasets[1].data = mechanicalChart.data.datasets[1].data.map(x => x + (Math.random() - 0.5) * 0.2);
+            mechanicalChart.update();
+            
+            // 更新系统状态数据
+            systemStatusChart.data.datasets[0].data = systemStatusChart.data.datasets[0].data.map(x => x + (Math.random() - 0.5) * 1);
+            systemStatusChart.data.datasets[1].data = systemStatusChart.data.datasets[1].data.map(x => x + (Math.random() - 0.5) * 1);
+            systemStatusChart.update();
+            
+            // 更新数字显示
+            document.querySelectorAll('.number-display').forEach(el => {
+                const original = el.textContent.replace(/[^0-9.]/g, '');
+                if (!isNaN(parseFloat(original))) {
+                    const newValue = (parseFloat(original) + (Math.random() - 0.5) * 0.5).toFixed(1);
+                    el.textContent = el.textContent.replace(/[0-9.]+/, newValue);
+                }
+            });
+        }, 2000);
+    </script>
+</body>
+</html>
